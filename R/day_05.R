@@ -7,7 +7,7 @@ bin2dec <- function(x)
   sum(pow[b == 1])
 }
 
-dd <- read_lines("test")
+dd <- read_lines("data/day_05")
 
 d1 <- str_replace_all(dd, "F", "0") %>% 
   str_replace_all("B", "1") %>% 
