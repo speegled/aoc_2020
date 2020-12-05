@@ -1,3 +1,4 @@
+library(tidyverse)
 dd <- read_lines("data/day_04")
 
 dd <- paste(dd, collapse = " ")
