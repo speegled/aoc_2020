@@ -1,22 +1,22 @@
 library(tidyverse)
-dd <- read_lines("data/day_04")
+dd <- read_file("data/day_04")
 
-dd <- paste(dd, collapse = " ")
-dd <- dd %>% str_split("  ")
-dd <- unlist(dd)
+dd <- dd %>% 
+  str_split("\n\n") %>% 
+  unlist()
 
 sum(str_count(dd, "byr:|iyr:|eyr:|hgt:|hcl:|ecl:|pid:") == 7) #first star!
 
 dd <- dd[str_count(dd, "byr:|iyr:|eyr:|hgt:|hcl:|ecl:|pid:") == 7]
 
 mdf <- function(x) {
-  data.frame(byr = str_extract(x, "byr:[^ ]*"),
-             iyr = str_extract(x, "iyr:[^ ]*"),
-             eyr = str_extract(x, "eyr:[^ ]*"),
-             hgt = str_extract(x, "hgt:[^ ]*"),
-             ecl = str_extract(x, "ecl:[^ ]*"),
-             pid = str_extract(x, "pid:[^ ]*"),
-             hcl = str_extract(x, "hcl:[^ ]*")
+  data.frame(byr = str_extract(x, "byr:[^ \n]*"),
+             iyr = str_extract(x, "iyr:[^ \n]*"),
+             eyr = str_extract(x, "eyr:[^ \n]*"),
+             hgt = str_extract(x, "hgt:[^ \n]*"),
+             ecl = str_extract(x, "ecl:[^ \n]*"),
+             pid = str_extract(x, "pid:[^ \n]*"),
+             hcl = str_extract(x, "hcl:[^ \n]*")
   )
 }
 ee <- mdf(dd) %>% 
