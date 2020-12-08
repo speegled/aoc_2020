@@ -31,6 +31,23 @@ gg <- graph_from_edgelist(el = as.matrix(edges_no[,c(1,3)]), directed = TRUE)
 aa <- distances(gg, v = V(gg), to = "shiny gold", mode = "out")
 sum(aa < Inf & aa > 0) #first star!
  
+
+gg <- set_edge_attr(gg, name = "weight", value = edges_no$weight)
+nbs <- neighborhood(gg, nodes = "shiny gold", mode = "out", order = 1000)
+all_paths <- all_simple_paths(gg,from = "shiny gold", to = nbs[[1]], mode = "out")
+sapply(1:length(all_paths), function(x) {
+  prod(E(gg, path = all_paths[[x]])$weight)
+}) %>% 
+  sum() #second star!
+
+
+
+
+
+#'
+#' original way below
+#'
+
 gg <- set_edge_attr(gg, name = "weight", value = edges_no$weight)
 nbs <- neighborhood(gg, nodes = "shiny gold", mode = "out", order = 1000)
 all_paths <- all_simple_paths(gg,from = "shiny gold", to = nbs[[1]], mode = "out")
