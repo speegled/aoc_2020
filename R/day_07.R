@@ -1,29 +1,16 @@
 library(tidyverse)
 library(igraph)
 
+dd <- data.frame(x = read_lines("data/day_07"))
 
-dd <- read_lines("data/day_07")
-
-dd <- data.frame(x = dd)
-head(dd)
-edges <- dd %>% 
-  extract(x, into = c("origin", "contains"), "([a-z ]+) bags (.*)") %>% 
-  #mutate(origin = factor(origin)) %>% 
-  mutate(contains = str_remove(contains, "contain[s]*")) %>%
-  mutate(contains = str_remove_all(contains, ",")) %>% 
-  mutate(contains = str_replace_all(contains, "([0-9]+)", "+\\1")) %>% 
-  separate_rows(contains, sep = "\\+") %>% 
-  filter(contains != " ") %>% 
-  mutate(contains = str_remove(contains, "^ ")) %>% 
-  mutate(contains = str_remove(contains, " bag[s]*[\\.]*")) %>% 
-  mutate(contains = str_remove(contains, " $")) %>% 
-  mutate(contains = str_replace(contains, "([0-9]+) ", "\\1+")) %>% 
-  mutate(contains = ifelse(contains == "no other", "0+no other", contains)) %>% 
-  # pull(contains) %>% 
-  # str_detect("[0-9]+")
-  separate(col = contains, into = c("weight", "contains"), sep = "\\+", convert = TRUE)
-
-edges_no <- edges %>% 
+edges_no <- dd %>% 
+  mutate(origin = str_extract(x, "^[a-z ]*(?= bag)")) %>% 
+  mutate(contains = str_extract_all(x, "[0-9].*")) %>% 
+  mutate(contains = str_remove_all(contains, " bag[s]*|\\.|")) %>% 
+  filter(str_length(contains) > 0) %>% 
+  separate_rows(contains, sep = ", ") %>% 
+  extract(contains, into = c("weight", "contains"), regex = "([0-9]) (.*)", convert = TRUE) %>% 
+  select(-x) %>% 
   filter(contains != "no other")
 
 gg <- graph_from_edgelist(el = as.matrix(edges_no[,c(1,3)]), directed = TRUE)
