@@ -14,7 +14,7 @@ for(i in 1:477) {
   for(j in (i + 1):478) {
     x <- sum(dd[i:j])
     if(x == dd[26 + ii]) {
-      print(sum(min(  dd[i:j] ), max(dd[i: j])))
+      print(sum(c(min(dd[i:j]), max(dd[i: j]))))
       break
     } 
   }
