@@ -1,10 +1,6 @@
 library(tidyverse)
 
-#'
-#' helper function to deal with indexing starting with 1. still confuses me otherwise.
-#'
-
-inc <- function(x, n, m = 4) {
+inc <- function(x, n, m = 4) { #helper function
   a <- (x + n) %% 4
   if(a == 0) {
     a <- m
@@ -15,7 +11,6 @@ inc <- function(x, n, m = 4) {
 dd <- data.frame(x = read_lines("data/day_12"))
 dd <- dd %>% 
   extract(col = x, into = c("direction", "distance"), regex = "([A-Z])([0-9]+)", convert = T)
-
 
 dirs <- list(c(1,0), c(0,1), c(-1,0), c(0,-1))
 
@@ -38,6 +33,7 @@ move <- function(direction, distance, current) {
   return(current)
 }
 
+
 facing <- 1
 current <- c(0, 0)
 i <- 1
@@ -48,7 +44,54 @@ for(i in 1:nrow(dd)) {
 sum(abs(current))  #first star!
 
 #'
-#' Start of second star
+#' Start of second star, with rotation matrix
+#'
+
+rotation_matrix <- matrix(c(0, 1, -1, 0), nrow = 2)
+
+rotate_waypoint <- function(waypoint, direction, signed_magnitude) {
+  pow <- signed_magnitude / 90
+  as.vector(matrixcalc::matrix.power(rotation_matrix, pow) %*% waypoint)
+}
+
+dd <- dd %>% 
+  mutate(signed_distance = ifelse(direction == "R", -1 * distance, distance)) %>% 
+  mutate(signed_direction = ifelse(direction == "R", "L", direction))
+
+move_waypoint <- function(direction, distance, waypoint, ship) {
+  wp <- switch(direction,
+               N = waypoint + distance * c(0, 1),
+               S = waypoint + distance * c(0, -1),
+               E = waypoint + distance * c(1, 0),
+               W = waypoint + distance * c(-1, 0),
+               L = rotate_waypoint(waypoint, direction, distance),
+               F = waypoint
+  )
+  return(wp)
+}
+
+move_ship <- function(direction, distance, waypoint, ship) {
+  if(direction == "F") {
+    ship <- ship + distance * waypoint
+  } 
+  ship
+}
+
+ship <- c(0, 0)
+waypoint <- c(10, 1)
+
+for(i in 1:nrow(dd)) {
+  new_waypoint <- move_waypoint(dd$signed_direction[i], dd$signed_distance[i], waypoint, ship)
+  ship <- move_ship(dd$direction[i], dd$distance[i], waypoint, ship)
+  waypoint <- new_waypoint
+}
+sum(abs(ship)) #second star!
+
+
+
+
+#'
+#' Start of second star, original
 #'
 
 move_left <- function(wp, di) {
@@ -59,9 +102,6 @@ move_left <- function(wp, di) {
     wp[1] <- -wp[1]
   }
   return(wp)
-  # added after the fact, but seems worse
-  mat <- matrix(c(0, 1, -1, 0), nrow = 2)
-  return(as.vector(matrixcalc::matrix.power(x = mat, k = di) %*% wp))
 }
 
 move_right <- function(wp, di) {
@@ -79,7 +119,7 @@ move_waypoint <- function(direction, distance, waypoint, ship) {
     direction == "S" ~ waypoint + distance * c(0, -1),
     direction == "E" ~ waypoint + distance * c(1, 0),
     direction == "W" ~ waypoint + distance * c(-1, 0),
-    direction == "L" ~ move_left(waypoint, distance),
+    direction == "L" ~ move_left(waypoint, distance), #this is bad because it executes even when direction == "other" so if it throws an error in any case, we get an error
     direction == "R" ~ move_right(waypoint, distance),
     direction == "F" ~ waypoint
   )
