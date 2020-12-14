@@ -81,10 +81,9 @@ for(i in 1:length(dd)) {
   if(str_detect(dd[i], "mem")) {
     val <- as.integer(str_extract(dd[i], "[0-9]+$"))
     mem <- str_extract(dd[i], "\\[[0-9]+\\]") %>% 
-      str_remove_all("\\[|\\]") %>% 
-      as.integer()
+      str_remove_all("\\[|\\]") 
     mem <- as.bitstring(as.integer64(mem)) %>% 
-      str_sub(start = -36, end = -1) 
+      str_sub(start = -36, end = -1)
     hash_keys <- str_mask(mem, mask)
     for(j in 1:length(hash_keys)) {
       hash[[hash_keys[j]]] <- val
@@ -94,4 +93,3 @@ for(i in 1:length(dd)) {
 
 get_hash(ls(hash), hash) %>% sum() %>% formatC(digits = 13)
 ls(hash) %>% sapply(function(x) bin2dec(x)) %>% max
-
