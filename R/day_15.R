@@ -1,3 +1,38 @@
+#'
+#' Done two ways. First way is better and uses collections package.
+#'
+
+library(collections)
+
+key <- as.character(c(2,0,1,9,5,19))
+value <- 1:length(key)
+
+hash <- dict(items = value, keys = key)
+
+current_iteration <- length(key)
+current_value <- 19
+
+for(current_iteration in length(key):2019) {
+  hash_key <- as.character(current_value)
+  current_value <- current_iteration - hash$get(hash_key, default = current_iteration)
+  hash$set(hash_key, current_iteration) 
+}
+current_value #first star!
+
+system.time(expr = for(current_iteration in 2020:(30000000 - 1)) {
+  hash_key <- as.character(current_value)
+  current_value <- current_iteration - hash$get(hash_key, default = current_iteration)
+  hash$set(hash_key, current_iteration) 
+}) #130 seconds on my computer
+current_value #second star!
+
+
+#'
+#' Below was how I did it "live." Found out later that doing hashes this way
+#' has a memory leak and possibly related this code runs a lot slower, even
+#' if I clean up the if() statement and swith to a for loop.
+#'
+
 hash <- new.env(hash = TRUE, parent = emptyenv(), size = 30000001)
 assign_hash <- Vectorize(assign, vectorize.args = c("x", "value"))
 
@@ -14,7 +49,7 @@ if(exists(hash_key, hash)) {
 }
 current_iteration <- current_iteration + 1
 
-repeat {
+system.time(expr = repeat {
   hash_key <- as.character(current_value)
   if(exists(hash_key, hash)) {
      current_value<- current_iteration - hash[[hash_key]]
@@ -33,5 +68,6 @@ repeat {
     }
   }
 } 
+)
 first_star #first star!
 second_star #second_star!
