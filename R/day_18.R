@@ -31,7 +31,6 @@ arithmetic <- function(ss) {
       ee$push(char)
     }
     ss <- str_remove(ss, "[()\\+\\*]|[0-9]+")
-    rev(ee$as_list())
   }
 }
 
@@ -57,7 +56,6 @@ myadd <- function(str2) {
         ee$push(char)
       }
     }
-    rev(ee$as_list())
   }
   eval(parse(text = paste(ee$as_list() %>% unlist(), collapse = " ")))
 }
