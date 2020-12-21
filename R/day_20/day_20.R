@@ -1,7 +1,7 @@
-library(ttidyverse)
+library(tidyverse)
 library(collections)
-
-dd <- data.frame(x = read_lines("test"))
+library(igraph)
+dd <- data.frame(x = read_lines("data/day_20_tiles"))
 dd <- dd %>% 
   mutate(image = cumsum(x == "")) %>% 
   filter(x != "") 
@@ -12,7 +12,7 @@ names <- dd %>%
 
 dd <- filter(dd, !str_detect(x, "[0-9]"))
 dd <- left_join(dd, names)
-dd
+
 mats <- lapply(unique(dd$name), function(x) {
   dd[dd$name == x,]
 })
@@ -24,8 +24,6 @@ for(i in 1:length(mats)) {
 }
 
 da <- dict(items = mm, keys = names$name)
-da$as_list()
-
 names <- names$name
 
 match_rows <- sapply(names, function(x) {
@@ -56,26 +54,27 @@ for(i in names) {
 positions <- positions - diag(N)
 attributes(which(apply(positions, 2, sum) == 2))$names %>% as.integer() %>% prod() %>% format(scientific = F) #first star!
 
+
+#'
+#' Second star below!
+#'
+
 source("R/day_20/helpers.R")
 rotate <- function(x) t(apply(x, 2, rev))
 corners <- attributes(which(apply(positions, 2, sum) == 2))$names 
 edges <-  attributes(which(apply(positions, 2, sum) == 3))$names 
-length(edges)
+length(edges) #sanity check: should be 40
 
 gg <- graph_from_adjacency_matrix(positions)
 gg_full <- gg
-gg <- subgraph(gg, v = c(corners, edges))
-corners
+gg <- subgraph(gg, v = c(corners, edges)) #ignore warning?
 
-#edge_paths <- igraph::all_shortest_paths(gg, from = "2953", to = corners) #this tells me how to set up all the edges
 edge_paths <- igraph::all_shortest_paths(gg, from = "1753", to = corners) #this tells me how to set up all the edges
 bb <- matrix(rep(0, 14400), nrow = 10 * 12)
-edge_paths
+
 #'
 #' Find orientation of first corner matrix; number 1753. We know it matches to 2693 and 1609
 #'
-
-edge_paths[[1]]
 
 sapply(bounds$get(key = "1753"), function(x) x %in% bounds$get(key = "2693")) #[,10] not reversed
 sapply(bounds$get(key = "1753"), function(x) x %in% bounds$get(key = "1609")) #[10,] reversed 
@@ -89,13 +88,10 @@ col <- 12
 
 V(gg)
 input_mat <- rotate(t(da$get(key = "1753")))
-input_mat
 edge <- paste(input_mat[,1], collapse = "")
-edge
 bb <- put_matrix(input_mat, bb, row, col)
-bb
 next_mat <- "1753"
-j <- 1
+
 for(j in 1:11) {
   col <- 12 - j
   curr_mat <- next_mat
@@ -154,8 +150,7 @@ for(j in 1:10) {
 
 left_edge <- all_shortest_paths(gg_full, from = "2843", to = "3083")
 right_edge <- all_shortest_paths(gg_full, from = "1753", to = "1489")
-i <- 2
-j <- 3
+
 for(i in 2:11) {
   left_mat <- left_edge$res[[1]][i]
   right_mat <- right_edge$res[[1]][i]
@@ -178,39 +173,28 @@ for(i in 2:11) {
 sapply(1:11, function(x) all(bb[,x * 10] == bb[,x * 10 + 1]))
 sapply(1:11, function(x) all(bb[x*10,] == bb[x*10 + 1,]))
 
-remove_vals <- c(1:11 * 10, 1:11 * 10 + 1)
-# bb_save <- bb
+remove_vals <- c(1, 1:11 * 10, 1:11 * 10 + 1, 120) #AAAARGH, needed to remove the border that doesn't attach to other pieces!!!
+
 bb <- bb[,-remove_vals]
 bb <- bb[-remove_vals,]
 
-write_delim(as.data.frame(bb), path = "bbsmall")
-
-ss <- read_lines("seamonster")
-#ss <- ss %>% str_replace_all("\\#", "1") %>% 
-#  str_replace_all(" ", "0")
+ss <- read_lines("data/day_20_seamonster")
 ss <- paste(ss, collapse = "")
-ss
+
 ss <- ss %>% str_split("") %>% unlist() %>%  
   matrix(byrow = T, nrow = 3)
-ss
 ssind <- which(ss == "#", arr.ind = T)
-ssind
-ssind %>% str()
-dim(bb)
-monster <- matrix(rep(0, 98^2), ncol = 98)
+monster <- matrix(rep(0, 96^2), ncol = 96)
 
 monster[which(bb == "#", arr.ind = T)] <- "#"
 sum(monster == "#")
-sum(bb == "#")
-i <- 1
-j <- 2
-
+sum(bb == "#") #sanity checks!
 
 for(k in 1:4) {
   ss <- rotate(ss)
   ssind <- which(ss == "#", arr.ind = T)
-  for(i in 0:(98 - nrow(ss))) {
-    for(j in 0:(98 - ncol(ss))) {
+  for(i in 0:(96 - nrow(ss))) {
+    for(j in 0:(96 - ncol(ss))) {
       mat_add <- matrix(c(rep(i, 15), rep(j, 15)), ncol = 2)
       sstemp <- ssind + mat_add
       if(all(bb[sstemp] == "#")) {
@@ -220,13 +204,14 @@ for(k in 1:4) {
     }
   }
 }
-sum(monster == "#")
+sum(monster == "#") #second star!! if this didn't work, then I would have transposed as below:
+
 ss <- t(ss)
 for(k in 1:4) {
   ss <- rotate(ss)
   ssind <- which(ss == "#", arr.ind = T)
-  for(i in 0:(98 - nrow(ss))) {
-    for(j in 0:(98 - ncol(ss))) {
+  for(i in 0:(96 - nrow(ss))) {
+    for(j in 0:(96 - ncol(ss))) {
       mat_add <- matrix(c(rep(i, 15), rep(j, 15)), ncol = 2)
       sstemp <- ssind + mat_add
       if(all(bb[sstemp] == "#")) {
@@ -238,45 +223,10 @@ for(k in 1:4) {
   }
 }
 
-which(monster == "#")
-sum(monster == "#")
-write_delim(data.frame(monster), path = "monster")
-
-
-
-
-
-
-ss
-ssind
-all(monster[which(bb == "#")]== "#")
-ssind
-ssind %>% as.vector()
-bb[1:20, 1:3]
-bb[ssind]
-ssind
-sapply(1:15, function(x) bb[ssind[x,1], ssind[x,2]])
-bb[1:3, 1:20]
-bb[ssind]
-ssind
-for(i in 0:78) {
-  for(j in 0:95) {
-    mat_add <- matrix(c(rep(i, 15), rep(j, 15)), ncol = 2)
-    sstemp <- ssind + mat_add
-    if(all(bb[sstemp] == "#")) {
-      monster[sstemp] <- "."
-    }
-  }
-}
-sum(monster == "#")
-
 vvv <- monster %>% str_replace_all("#", "1") %>% 
   str_replace_all("\\.", "2") %>% 
   str_replace_all("0", "0") %>% 
   as.integer() %>% 
-  matrix(ncol = 98) 
-
+  matrix(ncol = 96) 
 
 image(vvv/3)
-monster
-
