@@ -90,11 +90,6 @@ play_game <- function(p1, p2) {
   }
 }
 
-dd <- data.frame(x = read_lines("../aoc_2020/data/day_22"))
-dd <- dd %>% mutate(player = cumsum(x == "") + 1) %>% 
-  filter(!str_detect(x, "Player")) %>% 
-  filter(x != "")
-
 cards_1 <- dd %>% filter(player == 1) %>% pull(x)
 p1 <- queue(items = as.integer(cards_1))
 
@@ -106,5 +101,5 @@ if(vall$winner == 1) {
   ((vall[[2]]$as_list() %>% unlist()) * (vall[[2]]$size():1)) %>% sum()
 } else {
   ((vall[[3]]$as_list() %>% unlist()) * (vall[[3]]$size():1)) %>% sum()
-}
+} #second star!
 
