@@ -1,8 +1,6 @@
 library(tidyverse)
 
-dd <- read_lines("test")
-dd <- data.frame(x = read_lines("test"))
-pk <- 11562782
+pk <- 11562782 #my data
 val <- 1
 i <- 0
 
@@ -17,7 +15,7 @@ card_key <- i
 
 i <- 0
 val <- 1
-pk <- 18108497
+pk <- 18108497 #more my data
 while(val != pk) {
   val <- val * subject_number
   val <- val %% 20201227
@@ -27,7 +25,7 @@ door_key <- i
 
 i <- 0
 val <- 1
-subject_number <- 18108497
+subject_number <- 18108497 #this is pk from above :-)
 while(i <= card_key - 1) {
   val <- val * subject_number
   val <- val %% 20201227
